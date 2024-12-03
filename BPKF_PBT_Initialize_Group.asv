@@ -1,0 +1,16 @@
+function[PBTstrCell]=BPKF_PBT_Initialize_Group(tmpFolder,nWorker,PBTsetup)
+
+
+groupInd=randi(999999,1);
+
+
+mkdir(fullfile(tmpFolder),strcat('Worker_Group_',num2str(groupInd)));
+
+PBTstrCell=cell(1,nWorker);
+for ii=1:nWorker
+    PBTstrCell.Worker=workInds(ii);
+    PBTstrCell.Group=groupInd;
+    PBTstrCell.isLeader=workInds(ii)==workLeader;
+end
+
+

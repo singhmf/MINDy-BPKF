@@ -198,7 +198,9 @@ if usedDep('Group')
         end
     end
 end
-if usedDep(KernDist)
+
+%% TBD Adding support for Kernel-based field-modeling
+if usedDep('KernDist')
     if ~iscell(KernDist)
         DepStr.KernDist={DepStr.KernDist};
     end

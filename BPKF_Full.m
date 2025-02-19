@@ -477,8 +477,6 @@ end
     n2V=-2*V;    
     n2S=-2*SS;
 %% BF Initialization
-%    if ~strcmpi(ModelSpec.freeQ(1),'n')
-%    rtQ=rtQ0+ModelSpec.baseQchol;
 isDiagQ=min(size(rtQ))==1;
 if isDiagQ
     dgRtQ=rtQ;
@@ -502,7 +500,6 @@ end
     for iS=1:SimLength
     simRand{iS}=randn(nX,nSim);
     simXC{iS}=simX;
-%    SimFun=-1+2./(1+exp(-2*(SS.*simX+V)));
 if isLIN
     SimFun=simX;
 else
@@ -510,7 +507,7 @@ else
 end
     simFunC{iS}=SimFun;
     if isDiagQ
-        simX=W*SimFun+diagD.*simX+C+dgRtQ.*simRand{iS};%(:,:,iS);
+        simX=W*SimFun+diagD.*simX+C+dgRtQ.*simRand{iS};
     else
         simX=W*SimFun+diagD.*simX+C+rtQ*simRand{iS};
     end
@@ -527,9 +524,6 @@ simCov=([simXC{2:end}]-simMean)*([simXC{2:end}]-simMean)'/(SimLength*nSim-1);
 %simMean=sum(sMeanTmp,2)/(SimLength*nSim);
 %% n-1 df for Cov, n df for Mean
 %simCov=(sCovTmp-(SimLength*nSim)*(simMean*simMean'))/(SimLength*nSim-1);
-
-%disp([CorrR2_00(simMean,simMean2) CorrR2_00(simCov,simCov2)])
-
 
 simCovOld=(1-decP)*simCov+decP*simCovOld;
 Pbf=(1-decFix)*simCovOld+decFix*Pfix;
@@ -549,12 +543,6 @@ else
 SetRep=BPKF_Discrete_Sample(ParStr.BatchSz,probSetTrain);
 SetRep=markTrain(SetRep);
 end
-
-
-%HrepRule
-%dropEnd=kalSpec.nKal+kalSpec.nRec+1;
-%[KdropSet,HdropSet]=BPK_Make_Hdrop(Hset,....;%% use BPK_gramschmidt..
-
 
 isDistr0=doFullDistr&&(or(isCVrun,mod(iBatch,saveDistrRate)==1));
 
@@ -600,8 +588,6 @@ for iMiniBatch=1:numel(SetRep)
         doKal=rand(1,nStep)<=probKal;
     end
     
-%    Kdrop=KdropSet{Krule(iRepB)};
-%    Hdrop=HdropSet{Hrule(iRepB)};
     ZX0=MeasSet{iSet}(:,(iB+ShiftBatch));
     
     %% Optionally subtract influence of input on measurements
@@ -619,13 +605,10 @@ for iMiniBatch=1:numel(SetRep)
     end
     Imat=I2set{iSet};
 
-%Pbf=Prt*Prt'+Pfix;
 
 %% 4.2 Initialize X0, P0 (note that this is ind. of measurement)
 if ~strcmpi(KalSpec.BFcov,'n')
 
-%    PP0=Pbf*Hfull';
-%    tt0=PP0/(Hfull*PP0+Rtrue);
 Sp=linsolve(Hfull*Pbf*Hfull'+Rtrue,Imat,opts);
 
 BF=Pbf*Hfull'*Sp;
@@ -833,12 +816,7 @@ end
    X=W*Fun+diagD.*X+C;
    FunRec{iRec}=Fun;
    if doInput
-%   if doInputGradX
-%       UR{iRec}=Ukal(:,iRec+ShiftBatch);
        X=X+BX*UR{iRec};
-%   end
-%   if doInputNOgradX
-%       X=X+BX*Ukal(:,iRec+ShiftBatch);
    end
    tmpE=Zrec(:,iRec+ShiftBatch)-H*X;
    dEdFrec{iRec}=HC20*tmpE;
@@ -925,9 +903,6 @@ gradV=gradV+sum(dEdTan,2);
 
 
 %% 7.3 Backprop to predicted covariance
-%dEdPt1=hYC{ii}*GcEx'+(GC{ii}'*dEdP*GC{ii});
-%gradQrt=gradQrt+(dEdPt1+dEdPt1')*rtQ;
-%dEdPt1Jac2=(dEdPt1+dEdPt1')*JacC{ii};
 if doKal(ii)
     if ii==nStep
        dEdPt1=hYC{ii}*GcEx'+GcEx*hYC{ii}';
@@ -1017,25 +992,21 @@ end
         gradD=gradD+sum(dEdXchol.*XC{ii},2);
         gradW=gradW+dEdXchol*Fchol{ii}';
         dEdXpre=(dFun).*(ATS*dEdXchol)+diagD.*dEdXchol;
-%                dEdXpre=(((SS.*dFun).))*dEdXchol;%+diagD.*dEdXchol;        
+       
         dEdX=sum(dEdXpre,2);
-     %   dB=dEdXpre*BaseMat';
-%        dB=dEdXpre*BaseMatT;
         dB=dEdXpre(:,in1)-dEdXpre(:,in2);
     QZ=LC{ii}'*dB;
-%    invLC=pinv(LC{ii});
-    dEdPpreL=TrilMat.*QZ;%(tril(QZ)-diag(diag(QZ))/2);
+
+    dEdPpreL=TrilMat.*QZ;
     dEdPpreL=(dEdPpreL+dEdPpreL')/2;
-%    tmp=invLC'*(t0)*invLC;
-%    tmp=(LC{ii}'\t0)/LC{ii};
-%    dEdP=(tmp+tmp')/2;
+
 end
     %% 8.3 BP to P0
     invLC=linsolve(LC{ii},InX,opts2);
-%    invLC=pinv(LC{ii});
-   t0=TrilMat.*QZ;%(tril(QZ)-diag(diag(QZ))/2);
+
+   t0=TrilMat.*QZ;
     tmp=invLC'*(t0)*invLC;
- %   tmp=(LC{ii}'\t0)/LC{ii};
+
     dEdP=(tmp+tmp')/2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif isLIN
@@ -1065,9 +1036,7 @@ gradC=gradC+sum(GcEx2,2);
 
 
 %% 7.3 Backprop to predicted covariance
-%dEdPt1=hYC{ii}*GcEx'+(GC{ii}'*dEdP*GC{ii});
-%gradQrt=gradQrt+(dEdPt1+dEdPt1')*rtQ;
-%dEdPt1Jac2=(dEdPt1+dEdPt1')*JacC{ii};
+
 if doKal(ii)
     if ii==nStep
        dEdPt1=hYC{ii}*GcEx'+GcEx*hYC{ii}';
@@ -1140,13 +1109,12 @@ dEdF=zeros(nX,nSim);
 zScale=(2/(SimLength*nSim-1))*(1-decP)*(1-decFix);
     for iS=SimLength:-1:1 
             dEdF=dEdF+dEdPbf*(zScale*(simXC{iS+1}-simMean)); 
-          %  dEdF=dEdF+zScale*dEdPbf*(simXC{iS+1}-simMean);  
+ 
    X=simXC{iS};
 
 
 gradQrt=gradQrt+dEdF*simRand{iS}';
-%gradQrt=gradQrt+dEdF*simRand(:,:,iS)';
- %   Fun=tanh(SS.*X+V);%FunRec{iRec};
+
     Fun=simFunC{iS};
 gradW=gradW+dEdF*Fun';
  gradD=gradD+sum(dEdF.*X,2);
@@ -1211,7 +1179,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 if (recParam~=0) && mod(iBatch,recParam)==1
     recordInd=ceil(iBatch/recParam);
- %   ParTmp=BPKF_Apply_Dependency(ParamValDep);
+
         Out.recParam{recordInd}=ParamValDep;
         Out.recParamInd(1,recordInd)=iBatch;
 end
@@ -1254,11 +1222,6 @@ if strcmpi(KalSpec.BFcov(1),'s')
 end
 disp('Saving')
 ttSave=tic;
-%if mod(iBatch,saveRate*2)==1
-%matSAVE_Bhalf.Out=Out;
-%else
-%matSAVE_Ahalf.Out=Out;
-%end
 save(ParStr.saveName,'Out')
 toc(ttSave)
 disp(['Done saving: ',num2str(toc(ttSave))])
@@ -1349,15 +1312,6 @@ if mod(iBatch,500)==1
         tmpRec=Uncellfun(@(xx)(xx(:,1)),Xrec(2:end));
         Out.Pred{ceil(iBatch/500)}=H*[tmpRec{:}];
     end
-%    if iBatch>5000
-%figure;subplot(1,2,1);plot([Xrec{:}]')
-%subplot(1,2,2);plot((H*[Xrec{2:end}])','r');
-%pbaspect([1 1 1])
-%title(['Batch :',num2str(iBatch)])
-%hold on;plot(Zrec(:,(1:(nRec-1))+ShiftBatch)','b')
-%pbaspect([1 1 1])
-%    title(['Batch :',num2str(iBatch)])
-%    end
 end
 end
 end
@@ -1382,8 +1336,7 @@ Out.runTime=toc(batchTIC);
 [Out.Param,Out.rtQ]=BPKF_Condense_Param(ParamValDep,doInput);
 if doSave
     save(ParStr.saveName,'Out')
-%    delete([ParStr.saveName,'_Ahalf']);
-%    delete([ParStr.saveName,'_Bhalf']);
+
 end
 Out.ParamValDep=ParamValDep;
 if doAdaR

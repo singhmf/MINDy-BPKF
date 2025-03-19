@@ -19,7 +19,7 @@ nRep=1;
     %% Number of Kalman-Filtering Steps
         nStep=20;
 %% Number of batches
-NBatch=30000;
+NBatch=50000;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -157,7 +157,7 @@ GradSpec.ClipType='Moving';
 
 Xguess=cell(1,size(mm.trueX,3));
 MeasSet=cell(1,size(mm.trueX,3));
-for ii=1:5%size(mm.trueX,3)
+for ii=1:size(mm.trueX,3)
    %% Xguess is deprecated--fill with garbage0
         Xguess{ii}=single(randn(size(mm.trueX,[1 2]))/100);
    %% Each element of meas-set is a simulated recording 

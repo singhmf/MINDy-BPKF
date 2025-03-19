@@ -18,11 +18,12 @@ nRep=1;
         nRec=5;
     %% Number of Kalman-Filtering Steps
         nStep=10;
-%% Number of batches
+%% Number of batches/batch size: set lower than paper for
+%%      accessibility/demo
 %% This is set low for now--increase it for performance 
 %% analogous the PNAS paper
 NBatch=50000;
-%% Number of minibatches/iteration--likewise increase this for
+%% Number of minibatches for each iteration--likewise increase this for
 %% higher performance mirroring the paper
 BatchSz=1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

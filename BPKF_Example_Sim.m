@@ -17,10 +17,14 @@ nRep=1;
     %% Number of forward-prediction steps after Kalman-filter
         nRec=5;
     %% Number of Kalman-Filtering Steps
-        nStep=20;
+        nStep=10;
 %% Number of batches
+%% This is set low for now--increase it for performance 
+%% analogous the PNAS paper
 NBatch=50000;
-
+%% Number of minibatches/iteration--likewise increase this for
+%% higher performance mirroring the paper
+BatchSz=1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -124,7 +128,7 @@ kalSpec.Pbase=single(eye(2*nRegion)/4);
 kalSpec.minStep=0;
 
 %% Number of minibatches/iteration
-ParStr0.BatchSz=4;
+ParStr0.BatchSz=BatchSz;
 %% Number of total iterations
 ParStr0.NBatch=NBatch;
 %% No penalty for steady-state error estimation

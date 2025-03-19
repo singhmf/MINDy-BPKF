@@ -17,7 +17,7 @@ nRep=1;
     %% Number of forward-prediction steps after Kalman-filter
         nRec=5;
     %% Number of Kalman-Filtering Steps
-        nStep=10;
+        nStep=20;
 %% Number of batches/batch size: set lower than paper for
 %%      accessibility/demo
 %% This is set low for now--increase it for performance 
